@@ -166,8 +166,8 @@ data/*.arrow
 *.tar.gz
 *.tar.bz2
 
-# Experiment Results
-results/
+# Experiment Results (keep specific completed experiments)
+# results/  # Commented out to allow pushing completed experiment results
 outputs/
 logs/
 wandb/
