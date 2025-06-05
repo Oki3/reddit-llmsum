@@ -65,28 +65,56 @@ export MISTRAL_API_KEY="your-api-key-here"
 ### 3. Run Fast API Experiment
 
 ```bash
-# Quick test (21 samples in ~4 minutes)
-python experiments/run_experiment_api.py --eval-sample-size 50
+# Set your API key
+export MISTRAL_API_KEY="your-api-key-here"
 
-# Larger experiment (80+ samples in ~15 minutes)  
-python experiments/run_experiment_api.py --eval-sample-size 80
+# Quick test (10 samples, ~1 minute)
+python experiments/run_experiment_api.py --eval-sample-size 10 --delay 1.0
 
-# With custom API key
-python experiments/run_experiment_api.py --api-key your-key-here --eval-sample-size 100
+# Medium scale (100 samples, ~4 minutes) 
+python experiments/run_experiment_api.py --eval-sample-size 100 --delay 1.0
+
+# Large scale with responses saved (1000 samples, ~10 minutes)
+export MISTRAL_API_KEY="your-api-key-here" && python experiments/run_experiment_api.py --eval-sample-size 1000 --save-predictions --delay 1.0
+
+# Research scale (comprehensive analysis)
+python experiments/run_experiment_api.py --eval-sample-size 2000 --save-predictions --delay 1.0
+```
+
+### 🎛️ CLI Options
+
+```bash
+python experiments/run_experiment_api.py --help
+
+# Key options:
+--eval-sample-size N     # Number of samples to evaluate (default: 50)
+--save-predictions       # Save individual Mistral responses to JSON files
+--delay 1.0             # API delay in seconds (default: 1.0, prevents rate limits)
+--api-key KEY           # Mistral API key (or use MISTRAL_API_KEY env var)
+--model MODEL           # Mistral model name (default: open-mistral-7b)
 ```
 
 ## 🏃‍♂️ API vs Local Deployment
 
 | Feature | API Deployment | Local Deployment |
 |---------|---------------|------------------|
-| **Speed** | ~4 min (21 samples) | ~2-3 hours (21 samples) |
+| **Speed** | ~1-10 min (10-1000 samples) | ~2-20 hours (10-1000 samples) |
 | **Setup** | 5 minutes | 1-2 hours |
 | **Hardware** | Any laptop | CUDA GPU + 16GB+ RAM |
+| **Rate Limiting** | 1 req/sec (configurable) | No limits |
 | **Reliability** | 100% | Memory issues common |
-| **Cost** | Very low | Hardware + electricity |
+| **Cost** | ~$0.10 per 1000 samples | Hardware + electricity |
 | **Research Quality** | Identical | Identical |
 
 **💡 Recommendation: Use API for research - it's faster, easier, and more reliable!**
+
+### ⚠️ Rate Limiting Best Practices
+
+- **Default delay: 1.0 seconds** prevents 429 rate limit errors
+- **For faster experiments:** `--delay 0.5` (riskier, may hit limits)
+- **For safer experiments:** `--delay 2.0` (slower but guaranteed)
+- **Progress tracking:** Shows completion every 10 samples
+- **Error handling:** Automatic retry on API failures
 
 ## 📁 Project Structure
 
@@ -161,11 +189,16 @@ After running experiments, find clean results in:
 results/api_experiment_YYYYMMDD_HHMMSS/
 ├── 📋 SUMMARY.md                     # Clean research summary with key findings
 ├── 📊 approach_comparison.csv        # Performance comparison table
+├── 📄 instruction_predictions.json   # Individual Mistral responses (instruction-based)
+├── 📄 few_shot_predictions.json      # Individual Mistral responses (few-shot)
+├── 📋 complete_results.json          # Complete evaluation metrics
 └── 📈 plots/                         # Key visualizations
     ├── rouge_comparison.png          # ROUGE scores comparison
     ├── bertscore_comparison.png       # Semantic similarity scores
     └── quality_radar_chart.png       # Multi-metric overview
 ```
+
+**💡 Note:** Individual prediction files are only saved when using `--save-predictions` flag.
 
 ### Sample Results
 
@@ -175,6 +208,31 @@ results/api_experiment_YYYYMMDD_HHMMSS/
 | Instruction-Based | 0.176 | 0.036 | 0.858 | 0.119 |
 
 **Key Insight**: Few-shot examples provide better context for summarization style, leading to more coherent and comprehensive summaries.
+
+### 📄 Viewing Individual Mistral Responses
+
+When using `--save-predictions`, you can examine individual Mistral-generated summaries:
+
+```bash
+# View instruction-based responses
+cat results/api_experiment_YYYYMMDD_HHMMSS/instruction_predictions.json
+
+# View few-shot responses  
+cat results/api_experiment_YYYYMMDD_HHMMSS/few_shot_predictions.json
+```
+
+Each prediction file contains:
+```json
+[
+  {
+    "index": 0,
+    "input_text": "Original Reddit post content...",
+    "generated_summary": "Mistral's generated summary",
+    "reference_summary": "Human reference summary",
+    "approach": "zero_shot_instruct" // or "zero_shot_few_shot"
+  }
+]
+```
 
 ## 🏗️ Advanced: Local Deployment (For Expert Users)
 
