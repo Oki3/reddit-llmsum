@@ -28,6 +28,10 @@ def main():
                        help='Mistral API key (or set MISTRAL_API_KEY env var)')
     parser.add_argument('--model', type=str, default='open-mistral-7b',
                        help='Mistral model name (default: open-mistral-7b)')
+    parser.add_argument('--save-predictions', action='store_true',
+                       help='Save individual predictions to JSON files (default: False)')
+    parser.add_argument('--delay', type=float, default=1.0,
+                       help='Delay between API calls in seconds to respect rate limits (default: 1.0)')
     
     args = parser.parse_args()
     
@@ -39,6 +43,12 @@ def main():
     print("🚀 API Experiment results will be saved to:", results_dir)
     print("=" * 60)
     print("🌟 Reddit LLM Summarization Research - API Edition")
+    print("=" * 60)
+    print(f"⚙️  Configuration:")
+    print(f"   • Sample size: {args.eval_sample_size}")
+    print(f"   • Model: {args.model}")
+    print(f"   • API delay: {args.delay}s (rate limiting)")
+    print(f"   • Save predictions: {args.save_predictions}")
     print("=" * 60)
     
     try:
@@ -83,7 +93,7 @@ def main():
         instruction_summaries = model.batch_generate_summaries(
             test_posts, 
             prompt_type="instruct",
-            delay=0.1  # Small delay to respect rate limits
+            delay=args.delay  # Configurable delay to respect rate limits
         )
         
         instruction_results = evaluator.comprehensive_evaluation(
@@ -101,7 +111,7 @@ def main():
         few_shot_summaries = model.batch_generate_summaries(
             test_posts, 
             prompt_type="few_shot",
-            delay=0.1  # Small delay to respect rate limits
+            delay=args.delay  # Configurable delay to respect rate limits
         )
         
         few_shot_results = evaluator.comprehensive_evaluation(
@@ -114,11 +124,49 @@ def main():
         # Save results
         print("\n💾 Saving results...")
         
+        # Save the actual generated summaries (if requested)
+        if args.save_predictions:
+            print("💾 Saving generated summaries...")
+            
+            # Save instruction-based predictions
+            instruction_predictions = []
+            for i, (pred, ref, inp) in enumerate(zip(instruction_summaries, test_summaries, test_posts)):
+                instruction_predictions.append({
+                    "index": i,
+                    "input_text": inp,
+                    "generated_summary": pred,
+                    "reference_summary": ref,
+                    "approach": "zero_shot_instruct"
+                })
+            
+            with open(results_dir / "instruction_predictions.json", "w") as f:
+                json.dump(instruction_predictions, f, indent=2)
+            
+            # Save few-shot predictions
+            few_shot_predictions = []
+            for i, (pred, ref, inp) in enumerate(zip(few_shot_summaries, test_summaries, test_posts)):
+                few_shot_predictions.append({
+                    "index": i,
+                    "input_text": inp,
+                    "generated_summary": pred,
+                    "reference_summary": ref,
+                    "approach": "zero_shot_few_shot"
+                })
+            
+            with open(results_dir / "few_shot_predictions.json", "w") as f:
+                json.dump(few_shot_predictions, f, indent=2)
+            
+            print(f"📄 Individual predictions saved to {results_dir}/")
+        else:
+            print("📊 Skipping individual prediction saves (use --save-predictions to enable)")
+        
         # Create experiment config
         config = {
             "model_name": model.model_name,
             "eval_sample_size": args.eval_sample_size,
             "api_based": True,
+            "save_predictions": args.save_predictions,
+            "api_delay": args.delay,
             "timestamp": timestamp
         }
         

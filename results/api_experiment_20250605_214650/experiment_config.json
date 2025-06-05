@@ -1,6 +1,0 @@
-{
-  "model_name": "open-mistral-7b",
-  "eval_sample_size": 2000,
-  "api_based": true,
-  "timestamp": "20250605_214650"
-}
