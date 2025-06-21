@@ -1,0 +1,8 @@
+{
+  "model_name": "open-mistral-7b",
+  "eval_sample_size": 10000,
+  "api_based": true,
+  "save_predictions": true,
+  "api_delay": 1.0,
+  "timestamp": "20250621_180503"
+}
