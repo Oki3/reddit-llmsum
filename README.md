@@ -53,14 +53,28 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Get Mistral API Key
+### 2. Get API Key
 
+#### Option A: Mistral API Key
 ```bash
 # 1. Visit: https://console.mistral.ai/
 # 2. Create free account
 # 3. Generate API key
 # 4. Set environment variable:
 export MISTRAL_API_KEY="your-api-key-here"
+```
+
+#### Option B: Gemini API Key ⭐ **Recommended**
+```bash
+# 1. Visit: https://console.cloud.google.com/
+# 2. Create Google Cloud account (free tier available)
+# 3. Enable Generative AI API
+# 4. Generate API key
+# 5. Set environment variable:
+export GEMINI_API_KEY="your-api-key-here"
+
+# 6. Install additional dependency:
+pip install google-genai
 ```
 
 ### 3. Run Fast API Experiment
@@ -225,12 +239,27 @@ reddit-llmsum/
 
 After running experiments, find clean results in:
 
+#### Mistral API Results
 ```
 results/api_experiment_YYYYMMDD_HHMMSS/
 ├── 📋 SUMMARY.md                     # Clean research summary with key findings
 ├── 📊 approach_comparison.csv        # Performance comparison table
 ├── 📄 instruction_predictions.json   # Individual Mistral responses (instruction-based)
 ├── 📄 few_shot_predictions.json      # Individual Mistral responses (few-shot)
+├── 📋 complete_results.json          # Complete evaluation metrics
+└── 📈 plots/                         # Key visualizations
+    ├── rouge_comparison.png          # ROUGE scores comparison
+    ├── bertscore_comparison.png       # Semantic similarity scores
+    └── quality_radar_chart.png       # Multi-metric overview
+```
+
+#### Gemini API Results
+```
+results/gemini_experiment_YYYYMMDD_HHMMSS/
+├── 📋 SUMMARY.md                     # Clean research summary with key findings
+├── 📊 approach_comparison.csv        # Performance comparison table  
+├── 📄 instruction_predictions.json   # Individual Gemini responses (instruction-based)
+├── 📄 few_shot_predictions.json      # Individual Gemini responses (few-shot)
 ├── 📋 complete_results.json          # Complete evaluation metrics
 └── 📈 plots/                         # Key visualizations
     ├── rouge_comparison.png          # ROUGE scores comparison
