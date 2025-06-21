@@ -91,9 +91,17 @@ class WebISTLDRDatasetLoader:
             
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"Dataset file not found: {file_path}")
-            
+        
+        # Handle different JSON formats
         with open(file_path, 'r', encoding='utf-8') as f:
-            data = [json.loads(line) for line in f]
+            try:
+                # Try loading as a complete JSON array first
+                f.seek(0)
+                data = json.load(f)
+            except json.JSONDecodeError:
+                # If that fails, try JSON Lines format
+                f.seek(0)
+                data = [json.loads(line) for line in f if line.strip()]
             
         self.raw_data = data
         return data
