@@ -1,21 +1,22 @@
 # Reddit LLM Summarization Research 🤖📝
 
 <p align="center">
-  <em>Fast, reliable Reddit summarization using Mistral API - 30x faster than local deployment!</em>
+  <em>Fast, reliable Reddit summarization using Mistral & Gemini APIs - 30x faster than local deployment!</em>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.8+-blue.svg" alt="Python">
   <img src="https://img.shields.io/badge/API-Mistral--7B-green.svg" alt="API">
+  <img src="https://img.shields.io/badge/API-Gemini--2.0--Flash-orange.svg" alt="Gemini">
   <img src="https://img.shields.io/badge/Speed-30x_Faster-ff6b6b.svg" alt="Speed">
   <img src="https://img.shields.io/badge/Dataset-Webis--TLDR--17-blue.svg" alt="Dataset">
 </p>
 
 ## 🎯 Research Overview
 
-This project investigates the effectiveness of **Mistral-7B** for automatically summarizing Reddit discussions, comparing zero-shot instruction-based vs few-shot prompting strategies using the **Webis-TLDR-17** dataset containing 3.8M Reddit posts.
+This project investigates the effectiveness of **Mistral-7B** and **Gemini 2.0 Flash** for automatically summarizing Reddit discussions, comparing zero-shot instruction-based vs few-shot prompting strategies using the **Webis-TLDR-17** dataset containing 3.8M Reddit posts.
 
-**🚀 Now with API support for lightning-fast experiments!**
+**🚀 Now with dual API support for lightning-fast experiments!**
 
 ### 🔬 Research Questions
 
@@ -64,6 +65,8 @@ export MISTRAL_API_KEY="your-api-key-here"
 
 ### 3. Run Fast API Experiment
 
+#### Option A: Mistral API (Original)
+
 ```bash
 # Set your API key
 export MISTRAL_API_KEY="your-api-key-here"
@@ -75,14 +78,37 @@ python experiments/run_experiment_api.py --eval-sample-size 10 --delay 1.0
 python experiments/run_experiment_api.py --eval-sample-size 100 --delay 1.0
 
 # Large scale with responses saved (1000 samples, ~10 minutes)
-export MISTRAL_API_KEY="your-api-key-here" && python experiments/run_experiment_api.py --eval-sample-size 1000 --save-predictions --delay 1.0
+python experiments/run_experiment_api.py --eval-sample-size 1000 --save-predictions --delay 1.0
 
 # Research scale (comprehensive analysis)
 python experiments/run_experiment_api.py --eval-sample-size 2000 --save-predictions --delay 1.0
 ```
 
+#### Option B: Gemini API ⭐ **New!**
+
+```bash
+# Install Gemini API dependency
+pip install google-genai
+
+# Set your API key (get free key at: https://console.cloud.google.com/)
+export GEMINI_API_KEY="your-api-key-here"
+
+# Quick test (10 samples, ~1 minute)
+python experiments/run_gemini_experiment.py --eval-sample-size 10 --delay 0.5
+
+# Medium scale (100 samples, ~3 minutes) 
+python experiments/run_gemini_experiment.py --eval-sample-size 100 --delay 0.5
+
+# Large scale with responses saved (1000 samples, ~8 minutes)
+python experiments/run_gemini_experiment.py --eval-sample-size 1000 --save-predictions --delay 0.5
+
+# Research scale (comprehensive analysis)
+python experiments/run_gemini_experiment.py --eval-sample-size 2000 --save-predictions --delay 0.5
+```
+
 ### 🎛️ CLI Options
 
+#### Mistral API Options
 ```bash
 python experiments/run_experiment_api.py --help
 
@@ -94,19 +120,32 @@ python experiments/run_experiment_api.py --help
 --model MODEL           # Mistral model name (default: open-mistral-7b)
 ```
 
+#### Gemini API Options
+```bash
+python experiments/run_gemini_experiment.py --help
+
+# Key options:
+--eval-sample-size N     # Number of samples to evaluate (default: 50)
+--save-predictions       # Save individual Gemini responses to JSON files
+--delay 0.5             # API delay in seconds (default: 1.0, can be faster than Mistral)
+--api-key KEY           # Gemini API key (or use GEMINI_API_KEY env var)
+--model MODEL           # Gemini model name (default: gemini-2.0-flash)
+```
+
 ## 🏃‍♂️ API vs Local Deployment
 
-| Feature | API Deployment | Local Deployment |
-|---------|---------------|------------------|
-| **Speed** | ~1-10 min (10-1000 samples) | ~2-20 hours (10-1000 samples) |
-| **Setup** | 5 minutes | 1-2 hours |
-| **Hardware** | Any laptop | CUDA GPU + 16GB+ RAM |
-| **Rate Limiting** | 1 req/sec (configurable) | No limits |
-| **Reliability** | 100% | Memory issues common |
-| **Cost** | ~$0.10 per 1000 samples | Hardware + electricity |
-| **Research Quality** | Identical | Identical |
+| Feature | Mistral API | Gemini API | Local Deployment |
+|---------|-------------|------------|------------------|
+| **Speed** | ~1-10 min (10-1000 samples) | ~0.8-8 min (10-1000 samples) | ~2-20 hours (10-1000 samples) |
+| **Setup** | 5 minutes | 3 minutes | 1-2 hours |
+| **Hardware** | Any laptop | Any laptop | CUDA GPU + 16GB+ RAM |
+| **Rate Limiting** | 1 req/sec (configurable) | 2 req/sec (configurable) | No limits |
+| **Reliability** | 100% | 100% | Memory issues common |
+| **Cost** | ~$0.10 per 1000 samples | ~$0.08 per 1000 samples | Hardware + electricity |
+| **Research Quality** | Excellent | Excellent | Identical |
+| **Model** | open-mistral-7b | gemini-2.0-flash | Local Mistral-7B |
 
-**💡 Recommendation: Use API for research - it's faster, easier, and more reliable!**
+**💡 Recommendation: Use Gemini API for fastest results, Mistral API for established workflows, or local for full control!**
 
 ### ⚠️ Rate Limiting Best Practices
 
@@ -124,7 +163,8 @@ reddit-llmsum/
 │   └── dataset_loader.py       # Webis-TLDR-17 loader with HuggingFace integration
 ├── 🤖 models/                  # Model implementations
 │   ├── mistral_summarizer.py   # Local Mistral-7B (for advanced users)
-│   └── mistral_api_summarizer.py # API-based Mistral (recommended)
+│   ├── mistral_api_summarizer.py # API-based Mistral (original)
+│   └── gemini_api_summarizer.py # API-based Gemini (fastest)
 ├── 📈 evaluation/              # Evaluation metrics and analysis
 │   └── metrics.py             # ROUGE, BERTScore, coherence metrics
 ├── 🧪 experiments/             # Experiment runners
